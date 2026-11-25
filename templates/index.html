@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Avatar Greeting Studio</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand">
+    <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="" class="brand-logo">
+    <div>
+      <h1>AI Avatar Greeting Studio</h1>
+    </div>
+  </div>
+</header>
+
+<nav class="stepper" aria-label="Progress">
+  <div class="step active" data-step="1"><span>1</span>Details</div>
+  <div class="step" data-step="2"><span>2</span>Script</div>
+  <div class="step" data-step="3"><span>3</span>Voice</div>
+  <div class="step" data-step="4"><span>4</span>Video</div>
+</nav>
+
+<main class="layout">
+  <!-- ================= LEFT COLUMN ================= -->
+  <section class="column">
+
+    <!-- Card 1: greeting details -->
+    <div class="card" id="formCard">
+      <h2><span class="num">1</span> Greeting details</h2>
+      <form id="greetingForm" novalidate>
+        <div class="row two">
+          <label>Recipient name *
+            <input type="text" name="recipient" maxlength="40" placeholder="e.g. Priya" required>
+            <small class="field-error" data-for="recipient"></small>
+          </label>
+          <label>Sender name *
+            <input type="text" name="sender" maxlength="40" placeholder="e.g. Rahul" required>
+            <small class="field-error" data-for="sender"></small>
+          </label>
+        </div>
+
+        <div class="row two">
+          <label>Occasion
+            <select name="occasion" id="occasionSelect">
+              {% for occasion in occasions %}<option value="{{ occasion }}">{{ occasion }}</option>{% endfor %}
+            </select>
+            <small class="field-error" data-for="occasion"></small>
+          </label>
+          <label id="occasionNameWrap" class="hidden">
+            <span id="occasionNameLabel">Festival name</span>
+            <input type="text" name="occasion_name" maxlength="40" placeholder="e.g. Diwali">
+            <small class="field-error" data-for="occasion_name"></small>
+          </label>
+        </div>
+
+        <div class="field-label">Tone</div>
+        <div class="pill-group" role="radiogroup" aria-label="Tone">
+          {% set icons = {'Friendly': '😊', 'Formal': '🎩', 'Funny': '😄', 'Heartfelt': '💖'} %}
+          {% for tone in tones %}
+          <label class="pill">
+            <input type="radio" name="tone" value="{{ tone }}" {% if loop.first %}checked{% endif %}>
+            <span>{{ icons.get(tone, '') }} {{ tone }}</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <div class="row two">
+          <label>Language
+            <select name="language" id="languageSelect">
+              {% for code, info in languages.items() %}<option value="{{ code }}">{{ info.label }}</option>{% endfor %}
+            </select>
+            <small class="hint" id="languageHint"></small>
+          </label>
+          <label>Length
+            <select name="length">
+              {% for length in lengths %}<option value="{{ length }}">{{ length }}{% if length == 'Short' %} (~20 s){% else %} (~35 s){% endif %}</option>{% endfor %}
+            </select>
+          </label>
+        </div>
+
+        <label>Personal message <em>(optional)</em>
+          <textarea name="message" rows="2" maxlength="300" placeholder="e.g. Can't wait for our Goa trip next month!"></textarea>
+          <small class="hint"><span id="messageCount">0</span>/300 characters</small>
+          <small class="field-error" data-for="message"></small>
+        </label>
+
+        <button type="submit" class="btn btn-primary btn-wide" id="generateBtn">✨ Generate greeting script</button>
+      </form>
+    </div>
+
+    <!-- Card 2: script editor -->
+    <div class="card-head">
+      <h2><span class="num">2</span> Greeting script</h2>
+    </div>
+  
+      <textarea id="scriptBox" rows="7" maxlength="1200"
+        placeholder="Your personalised greeting will appear here. You can edit it before creating the voice."></textarea>
+      <div class="script-meta">
+        <span id="wordCount">0 words</span>
+        <span id="editedFlag" class="hidden">✏️ Edited by you</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-light" id="regenerateBtn" disabled>↻ Regenerate</button>
+        <button class="btn btn-primary" id="voiceBtn" disabled>🔊 Create voice</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RIGHT COLUMN ================= -->
+  <section class="column">
+    <div class="card studio" id="studioCard">
+      <div class="card-head">
+        <h2><span class="num">3</span> Avatar studio</h2>
+        <span class="badge badge-speaking hidden" id="speakingBadge">● Speaking</span>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="avatarCanvas" width="960" height="540" aria-label="Animated avatar preview"></canvas>
+      </div>
+      <p class="voice-info" id="voiceInfo">Create the voice to bring the avatar to life.</p>
+
+      <div class="btn-row controls">
+        <button class="btn btn-light" id="playBtn" disabled>▶ Play</button>
+        <button class="btn btn-light" id="pauseBtn" disabled>⏸ Pause</button>
+        <button class="btn btn-light" id="stopBtn" disabled>⏹ Stop</button>
+        <button class="btn btn-light" id="replayBtn" disabled>↺ Replay</button>
+      </div>
+
+      <details class="customise">
+        <summary>🎨 Expression and colours</summary>
+        <div class="field-label">Expression</div>
+        <div class="chip-row" id="expressionRow">
+          <button class="mini active" data-expression="auto">Auto (from tone)</button>
+          <button class="mini" data-expression="happy">Happy</button>
+          <button class="mini" data-expression="excited">Excited</button>
+          <button class="mini" data-expression="calm">Calm</button>
+          <button class="mini" data-expression="warm">Warm</button>
+          <button class="mini" data-expression="surprised">Surprised</button>
+        </div>
+        <div class="swatch-groups" id="swatchGroups"></div>
+      </details>
+
+      <label class="consent">
+        <input type="checkbox" id="consentBox">
+        <span>I understand this video uses an <strong>original cartoon avatar</strong>, the voice is
+          <strong>computer-generated</strong>, and I will share it only with people who are happy to receive it.</span>
+      </label>
+
+      <div class="record-row">
+        <button class="btn btn-record" id="recordBtn" disabled>● Record greeting video</button>
+        <button class="btn btn-light hidden" id="cancelRecordBtn">Cancel</button>
+      </div>
+      <div class="progress hidden" id="recordProgress">
+        <div class="progress-bar" id="recordBar"></div>
+      </div>
+      <p class="record-status" id="recordStatus"></p>
+
+      <div class="result hidden" id="resultBox">
+        <h3>🎉 Your greeting video is ready</h3>
+        <video id="resultVideo" controls playsinline></video>
+        <div class="btn-row">
+          <a class="btn btn-primary" id="downloadLink" download>⬇ Download video (.webm)</a>
+        </div>
+        <p class="hint" id="resultInfo"></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Gallery -->
+<section class="card wide" id="galleryCard">
+  <div class="card-head">
+    <h2>🎞️ Saved greetings <small>(stored only on this computer, in the output/videos folder)</small></h2>
+    <button class="btn btn-light btn-small" id="refreshGalleryBtn">↻ Refresh</button>
+  </div>
+  <div class="gallery" id="gallery"><p class="empty">No videos yet. Record your first greeting above!</p></div>
+</section>
+
+<!-- Ethics -->
+<section class="card wide ethics">
+  <h2>🤝 Consent, privacy and honesty</h2>
+  <div class="ethics-grid">
+    <div><strong>Original avatar.</strong> The face is a cartoon drawn in code. The app does not let you upload photos of real people, because using someone's likeness needs their permission.</div>
+    <div><strong>Honest labels.</strong> Every script shows whether the local AI model or the template fallback wrote it, and every video carries a "computer-generated" note.</div>
+    <div><strong>Stays on this computer.</strong> Names and messages go only to Ollama running locally. No cloud APIs, accounts or API keys are used.</div>
+    <div><strong>Approximate lip-sync.</strong> The mouth follows the loudness of the voice, not individual sounds, so it is not perfect lip-sync.</div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  AI Avatar Greeting Studio 
+</footer>
+
+<div class="toast-area" id="toastArea" aria-live="assertive"></div>
+<audio id="voiceAudio" preload="auto"></audio>
+
+<script src="{{ url_for('static', filename='js/avatar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/voice.js') }}"></script>
+<script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Generated files (your speech and videos stay on your computer)
+output/audio/
+output/videos/
+output/tmp/
+output/browser_check/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

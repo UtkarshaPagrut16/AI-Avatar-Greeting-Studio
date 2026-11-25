@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Original logo for AI Avatar Greeting Studio: a smiling face in a speech bubble -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b6cff"/>
+      <stop offset="1" stop-color="#5aa9ff"/>
+    </linearGradient>
+  </defs>
+  <path d="M10 6h44a8 8 0 0 1 8 8v28a8 8 0 0 1-8 8H28l-12 10v-10h-6a8 8 0 0 1-8-8V14a8 8 0 0 1 8-8z" fill="url(#g)"/>
+  <circle cx="32" cy="28" r="15" fill="#ffe2cc"/>
+  <path d="M17 26c0-10 7-15 15-15s15 5 15 15c-4-5-9-6-15-6s-11 1-15 6z" fill="#3b2a4f"/>
+  <circle cx="26.5" cy="28" r="2.4" fill="#2b1f3a"/>
+  <circle cx="37.5" cy="28" r="2.4" fill="#2b1f3a"/>
+  <path d="M26 34q6 5 12 0" stroke="#8a2d4b" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M52 10l1.5 3.5L57 15l-3.5 1.5L52 20l-1.5-3.5L47 15l3.5-1.5z" fill="#fff"/>
+</svg>

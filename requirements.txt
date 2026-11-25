@@ -1,0 +1,6 @@
+# Python packages for AI Avatar Greeting Studio.
+# Install with:  pip install -r requirements.txt
+Flask>=3.0,<4.0          # web server (BSD-3-Clause)
+requests>=2.31,<3.0      # talks to the local Ollama server (Apache-2.0)
+pyttsx3>=2.90,<3.0       # offline text-to-speech using Windows SAPI5 voices (MPL-2.0)
+pytest>=8.0              # automated tests (MIT)
